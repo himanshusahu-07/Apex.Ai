@@ -1,68 +1,72 @@
 import pyttsx3
-import speech_recognition
+import speech_recognition as sr
 import requests
 from bs4 import BeautifulSoup
 import datetime
 import pyautogui
-import Keyboard
 import os
-import speech_recognition
+import keyboard
+
+# Initialize the speech engine
 engine = pyttsx3.init("sapi5")
 voices = engine.getProperty("voices")
 engine.setProperty("voice", voices[0].id)
-rate = engine.setProperty("rate",170)
+engine.setProperty("rate", 170)
+
 
 def speak(audio):
     engine.say(audio)
     engine.runAndWait()
 
 
-def takeCommand():
-    r = speech_recognition.Recognizer()
-    with speech_recognition.Microphone() as source:
-        print("Listening.....")
-        r.pause_threshold = 1
-        r.energy_threshold = 300
-        audio = r.listen(source,0,4)
+def take_command():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        recognizer.pause_threshold = 1
+        recognizer.energy_threshold = 300
+        audio = recognizer.listen(source, 0, 4)
 
     try:
-        print("Understanding....")
-        query  = r.recognize_google(audio,language='en-in')
-        print(f"You Said: {query}\n")
+        print("Understanding...")
+        query = recognizer.recognize_google(audio, language='en-in')
+        print(f"You said: {query}\n")
     except Exception as e:
-        print("Say that again")
+        print("Could not understand. Please say that again.")
         return "None"
-    return query
+    return query.lower()
 
 
 if __name__ == "__main__":
     while True:
-        query = takeCommand().lower()
+        query = take_command()
+
         if "wake up" in query:
             from Greetme import greetMe
             greetMe()
 
             while True:
-                query = takeCommand().lower()
+                query = take_command()
+
                 if "go to sleep" in query:
-                    speak("Ok sir , You can me call anytime")
+                    speak("Okay sir, you can call me anytime.")
                     break
 
-                elif "news " in query :
-                    from  news import latestnews
+                elif "news" in query:
+                    from news import latestnews
                     latestnews()
 
                 elif "hello" in query:
-                    speak("Hello sir, how are you ?")
+                    speak("Hello sir, how are you?")
 
                 elif "i am fine" in query:
-                    speak("that's great, sir")
+                    speak("That's great, sir.")
 
                 elif "how are you" in query:
-                    speak("Perfect, sir")
+                    speak("Perfect, sir.")
 
                 elif "thank you" in query:
-                    speak("you are welcome, sir")
+                    speak("You're welcome, sir.")
 
                 elif "play a game" in query:
                     from game import game_play
@@ -70,33 +74,29 @@ if __name__ == "__main__":
 
                 elif "pause" in query:
                     pyautogui.press("k")
-                    speak("video paused")
+                    speak("Video paused.")
 
                 elif "play" in query:
                     pyautogui.press("k")
-                    speak("video played")
+                    speak("Video played.")
 
                 elif "mute" in query:
                     pyautogui.press("m")
-                    speak("video muted")
+                    speak("Video muted.")
 
                 elif "volume up" in query:
-                    from Keyboard import volumeup
-                    speak("Turning volume up,sir")
+                    speak("Turning volume up, sir.")
                     volumeup()
 
                 elif "volume down" in query:
-                    from Keyboard import volumedown
-                    speak("Turning volume down, sir")
+                    speak("Turning volume down, sir.")
                     volumedown()
-
 
                 elif "open" in query:
                     from Dictapp import openappweb
                     openappweb(query)
-                    
-                elif "close" in query:
 
+                elif "close" in query:
                     from Dictapp import closeappweb
                     closeappweb(query)
 
@@ -104,8 +104,7 @@ if __name__ == "__main__":
                     from SearchNow import searchGoogle
                     searchGoogle(query)
 
-
-                elif " youtube" in query:
+                elif "youtube" in query:
                     from SearchNow import searchYoutube
                     searchYoutube(query)
 
@@ -118,65 +117,49 @@ if __name__ == "__main__":
                     sendMessage()
 
                 elif "calculate" in query:
-                    from Calculatenumbers import wolframalpha
                     from Calculatenumbers import Calc
-                    query = query.replace("calculate","")
-                    query =query.replace("Apex" ,"")
+                    query = query.replace("calculate", "").replace("Apex", "")
                     Calc(query)
-               
 
                 elif "temperature" in query:
                     search = "temperature in Indore"
                     url = f"https://www.google.com/search?q={search}"
-                    r  = requests.get(url)
-                    data = BeautifulSoup(r.text,"html.parser")
-                    temp = data.find("div", class_ = "BNeawe").text
-                    speak(f"current{search} is {temp}")
+                    response = requests.get(url)
+                    data = BeautifulSoup(response.text, "html.parser")
+                    temp = data.find("div", class_="BNeawe").text
+                    speak(f"Current {search} is {temp}.")
                     print(temp)
-                    
 
                 elif "weather" in query:
                     search = "temperature in Indore"
                     url = f"https://www.google.com/search?q={search}"
-                    r  = requests.get(url)
-                    data = BeautifulSoup(r.text,"html.parser")
-                    whe = data.find("div", class_ = "BNeawe").text
-                    speak(f"current{search} is {whe}")
-                    print(whe)
-
+                    response = requests.get(url)
+                    data = BeautifulSoup(response.text, "html.parser")
+                    weather = data.find("div", class_="BNeawe").text
+                    speak(f"Current {search} is {weather}.")
+                    print(weather)
 
                 elif "the time" in query:
-                    strTime = datetime.datetime.now().strftime("%H:%M")
-                    speak(f"Sir, the time is {strTime}")
-
+                    current_time = datetime.datetime.now().strftime("%H:%M")
+                    speak(f"Sir, the time is {current_time}.")
 
                 elif "remember that" in query:
-                    rememberMessage = query.replace("remember that","")
-                    rememberMessage = query.replace("jarvis","")
-                    speak("You told me to remember that"+rememberMessage)
-                    remember = open("Remember.txt","a")
-                    remember.write(rememberMessage)
-                    remember.close()
-
+                    remember_message = query.replace(
+                        "remember that", "").replace("jarvis", "")
+                    speak("You told me to remember that " + remember_message)
+                    with open("Remember.txt", "a") as remember_file:
+                        remember_file.write(remember_message + "\n")
 
                 elif "what do you remember" in query:
-                    remember = open("Remember.txt","r")
-                    speak("You told me to remember that" + remember.read())
-
-
+                    with open("Remember.txt", "r") as remember_file:
+                        remember_data = remember_file.read()
+                    speak("You told me to remember that " + remember_data)
 
                 elif "shutdown the system" in query:
-                    speak("Are You sure you want to shutdown")
-                    shutdown = input("Do you wish to shutdown your computer? (yes/no)")
+                    speak("Are you sure you want to shutdown?")
+                    shutdown = input(
+                        "Do you wish to shutdown your computer? (yes/no): ").strip().lower()
                     if shutdown == "yes":
                         os.system("shutdown /s /t 1")
-
                     elif shutdown == "no":
                         break
-
-
-                # elif "finally sleep" or "sleep" in query:
-                #   speak("Going to sleep,sir")
-                #   exit()
-
-
